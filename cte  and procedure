@@ -1,0 +1,626 @@
+
+CREATE table  Employee(
+  firstname VARCHAR(30),
+  lastname VARCHAR(30),
+  age int,
+  gender CHAR(5),
+  salary int);
+  
+  INSERT INTo  Employee
+  VALUES('Ram','Thapa',20, 'M',20000),
+('Sita','Shrestha',24,'F',21000),
+('Ram','Karki',23,'M',18000),
+('Hari','Thapa',32,'M',25000);
+
+SELECT * FROM Employee;
+
+
+ALTER TABLE Employee
+ADD joining_Date DATE;
+ALTER TABLE Employee
+ADD  id INT;
+ALTER TABLE Employee
+ADD id2 VARCHAR(20);
+ 
+UPDATE Employee SET 
+joining_Date = '2025-01-01';
+
+UPDATE Employee SET id = 1 WHERE firstname='Ram' AND lastname='Thapa';
+UPDATE Employee SET id = 2 WHERE firstname='Sita' AND lastname='Shrestha';
+UPDATE Employee SET id = 3 WHERE firstname='Ram' AND lastname='Karki';
+UPDATE Employee SET id = 1 WHERE firstname='Hari' AND lastname='Thapa';
+
+
+UPDATE Employee
+SET id2 = SUBSTRING(firstname,1,2) + CAST(id AS VARCHAR(20));
+
+SELECT  *, CONCAT(SUBSTRING(firstname,1,2),id) AS id3
+FROM Employee;
+
+SELECT * FROM Employee;
+
+SELECT 1 + NULL ;
+
+SELECT 1> NULL;  
+
+SELECT * FROM 
+Employee WHERE salary=NULL;
+
+UPDATE Employee
+SET salary = NULL
+WHERE firstname='Sita';
+
+UPDATE Employee
+SET age = NULL
+WHERE firstname='Hari';
+
+SELECT *, SUM(Salary)
+FROM Employee;
+
+SELECT COUNT(*)
+FROM Employee;
+
+
+SELECT COUNT(Salary)
+FROM Employee;
+--COUNT(*)-includes NULL
+--COUNT(Column)-ignores NULL
+
+
+SELECT SUM(COALESCE(salary,28000))
+FROM Employee;
+
+UPDATE Employee
+SET salary=28000
+WHERE firstname='Sita';
+
+
+UPDATE Employee
+SET age=28
+WHERE firstname='Hari';
+
+
+SELECT firstname,lastname,SUM(salary) AS salary_desc
+FROM Employee
+GROUP BY firstname,lastname
+ORDER BY  salary DESC;
+
+
+SELECT *, MAX(salary)
+FROM Employee
+WHERE salary<(SELECT MAX(salary) FROM Employee);
+
+
+SELECT DISTINCT salary
+FROM Employee
+ORDER BY salary DESC
+LIMIT 1 OFFSET 1;
+
+
+SELECT * FROM
+(
+  SELECT firstname,lastname,salary,
+  DENSE_RANK() OVER(ORDER BY salary DESC) salary_desc
+  FROM Employee
+)t WHERE salary_desc=2;
+
+
+SELECT * FROM
+(
+    SELECT firstname,lastname,salary,
+    ROW_NUMBER() OVER(ORDER BY salary DESC) salary_desc
+     FROM Employee
+)t WHERE salary_desc=2;
+
+
+
+SELECT * FROM
+(
+  SELECT firstname,lastname,salary,
+  RANK() OVER(ORDER BY salary DESC) salary_desc
+  FROM Employee
+)t WHERE salary_desc=2;
+
+
+CREATE table  Employee1(
+  id INT PRIMARY KEY,
+  firstname VARCHAR(30),
+  lastname VARCHAR(30),
+  age int,
+  gender CHAR(5),
+  salary int);
+  
+  INSERT INTo  Employee1
+  VALUES(1,'Ram','Thapa',20, 'M',20000),
+(2,'Sita','Shrestha',24,'F',21000),
+(3,'Ram','Karki',23,'M',18000),
+(4,'Hari','Thapa',32,'M',25000);
+
+
+
+CREATE table  Employee2(
+  emp_id INT PRIMARY KEY,
+  firstname VARCHAR(30),
+  lastname VARCHAR(30),
+  id INT,
+  FOREIGN KEY (id) REFERENCES Employee1(id));
+  
+  INSERT INTo  Employee2
+  VALUES(101,'Ram','Thapa',1),
+(102,'Gita','Maharjan',6),
+(103,'Sita ','Shrestha',2),
+(104,'Isha','Thapa',7);
+
+ALTER TABLE Employee2
+ADD Dept VARCHAR(30);
+
+
+UPDATE Employee2 SET Dept = 'Finance' WHERE emp_id=101;
+UPDATE Employee2 SET Dept = 'HR' WHERE emp_id = 102;
+UPDATE Employee2 SET Dept = 'HR' WHERE emp_id =103;
+UPDATE Employee2 SET Dept= 'Finance' WHERE  emp_id=104;
+
+
+SELECT * FROM Employee1;
+SELECT * FROM Employee2;
+
+
+SELECT e.firstname,e.lastname,e1.Dept
+FROM Employee1 e
+INNER JOIN  Employee2 e1
+ON e.id=e1.id;
+
+
+
+SELECT e.firstname,e.lastname,e1.Dept
+FROM Employee1 e
+LeFT JOIN  Employee2 e1
+ON e.id=e1.id;
+
+
+SELECT e.firstname,e.lastname,e1.Dept
+FROM Employee1 e
+RIGHT JOIN  Employee2 e1
+ON e.id=e1.id;
+
+
+SELECT e.firstname,e.lastname,e1.Dept
+FROM Employee1 e
+CROSS JOIN  
+Employee2 e1;
+
+
+SELECT e.firstname,e.lastname,e1.Dept
+FROM Employee1 e
+FULL JOIN  
+Employee2 e1
+ON e.id=e1.id;
+
+SELECT e.firstname,e.lastname,e1.Dept
+FROM Employee1 e
+NATURAL JOIN  
+Employee2 e1
+
+
+INSERT INTO Employee1
+SELECT   1 id ,'Ram' firstname,'Thapa' lastname, 20 age,NULL,NULL;
+UNION ALL
+SELECT   1 id,'Ram' firstname,'Thapa' lastname, 20 age,'M' gender ,20000 salary;
+
+ 
+SELECT firstname,lastname,age 
+FROM Employee1
+UNION ALL
+SELECT firstname,lastname,dept
+FROM Employee2
+
+
+SELECT firstname,lastname,age 
+FROM Employee1
+UNION
+SELECT firstname,lastname,dept
+FROM Employee2
+
+
+
+
+CREATE table Employee_location(
+  add_id INT PRIMARY KEY,
+  firstname VARCHAR(30),
+  lastname VARCHAR(30),
+  Address VARCHAR(30)
+  );
+  
+ INSERT INTO Employee_location
+ VALUES
+ (1,'Ram','Thapa','Lalitpur'),
+ (4,'Hari','Thapa','Kathamandu'),
+ (3,'Ram','Karki','Kritipur'),
+ (5,'Sangam','Rai','Jhapa');
+ 
+ SELECt  * FROM Employee_location;
+ 
+SELECT e.firstname,e.lastname,e.Dept,e2.Address
+FROM Employee2 e
+LEFT JOIN Employee1 e1
+ON e.emp_id=e1.id
+LEFT JOIN Employee_location e2
+ON e.emp_id=e2.add_id;
+
+CREATE TABLE Employee(
+  EmpID INT PRIMARY KEY,
+  Empname VARCHAR(20),
+  Dept VARCHAR(20),
+  Salary Decimal(10,2));
+  
+  INSERT INTO Employee(EmpID,EmpName,Dept,Salary)
+  VALUES (1,'Anna','HR',450000),
+  (2,'Emma','IT',480000),
+  (3,'Kim','Finance',270000);
+  
+  SELECT * From Employee;
+  
+  CREATE Table Employee_cpoy AS
+  SELECT* FROM Employee;
+  
+  SELECT * FROM Employee_cpoy;
+  
+  SELECT EmpID,Empname,Dept,Salary
+  INTO Employee2
+  FROM Employee;
+  
+  SELECT * 
+  INTO Employee6
+  FROM Employee
+  WHERE 1=2;
+  
+  
+  SELECT * 
+  FROM Employee
+  WHERE Dept='IT';
+  
+  
+  
+CREATE table Employee_detail(
+  add_id INT PRIMARY KEY,
+  firstname VARCHAR(30),
+  lastname VARCHAR(30),
+  insuranceclaims DECIMAL(10,2),
+  EmpID INT,
+  FOREIGN KEY (EmpID) REFERENCES Employee(EmpID)
+  );
+  
+ INSERT INTO Employee_detail
+ VALUES
+ (101,'Anna','Thapa',700000,1),
+ (102,'Hari','Thapa',300000,4),
+ (103,'Emma','Karki',500000,2);
+  
+  
+  SELECT * FROM Employee_detail;
+  
+  SELECT e.Empname,e.Dept,e1.insuranceclaims
+  FROM Employee e
+  LEFT JOIN Employee_detail e1
+  ON e.EmpID=e1.EmpID
+  WHERE Dept='IT';
+
+  UPDATE Employee 
+  SET Dept='IT' WHERE EmpID=3;
+  
+  SELECT * FROM Employee;
+  
+  INSERT INTO Employee VALUES
+  (4,'Franco','Finance',600000);
+  
+  UPDATE Employee
+  SET Salary=NULL
+  WHERE EmpID=4;
+
+UPDATE Employee
+SET Salary= COALESCE(Salary,'Not Assigned');
+
+SELECT
+EmpID,
+COALESCE(Dept,'Not Assigned')
+FROM Employee;
+
+CREATE TABLE Emp(
+  EmpID INT,
+  EmpName VARCHAR(20),
+  Dept VARCHAR(20)
+  );
+  
+ INSERT INTO Emp(EmpID,EmpName,Dept)
+ SELECT 1,'Alice','HR'
+ UNION
+ SELECT 2,'Bob','IT'
+ UNION
+ SELECT 3,'Charlie','Finance';
+
+SELECT * FROM Emp;
+
+
+SELECT *,CONCAT(SUBSTRING(EmpName,1,2),EmpID) AS id_n
+FROM Emp;
+
+SELECT DISTINCT Salary
+FROM Emp
+ORDER BY Salary
+LIMIT 1 OFFSET 1
+
+SELECT *,SUBSTRING(EmpName,1,3) As short_name
+FROM Emp;
+
+SELECT EmpName ,Dept
+FROM Emp
+ORDER BY EmpName;
+
+SELECT EmpName,AVG(Salary)
+FROM Emp
+GROUP BY empname
+HAVING AVG(Salary)>5000;
+
+CREATE Table Emp2(
+  id INT PRIMARY KEY,
+  EmpName VARCHAR(20),
+  Salary INT,
+  
+  Address VARCHAR(20),
+  EmpID INT,
+  FOREIGN KEY (EmpID) REFERENCES Emp(EmpID));
+  
+ INSERT INTO Emp2(id,EmpName,Salary,Address,EmpID)
+ SELECT 101,'Alice',50000,'LELE',1
+ UNION
+ SELECT 102,'Tim',45000,'Lalitpur',4
+ UNION
+ SELECT 103,'Bob',25000,'Kathmandu',2;
+ 
+ SELECT * FROM Emp2;
+ 
+ CREATE TABLE Emp_copy AS
+ SELECT * FROM Emp;
+ 
+ SELECT * FROM Emp_copy;
+ 
+CREATE  TABLE Emp_copy2 AS
+SELECT *  FROM Emp2
+WHERE 1=2;
+
+
+SELECT * FROM Emp_Copy2;
+
+
+CREATE TABLE Student(
+  firstname VARCHAR(20),
+  lastname  VARCHAR(20),
+  stu_id INT PRIMARY KEY,
+  age INT,
+  marks INT);
+  
+ INSERT INTO Student(firstname,lastname,stu_id,age,marks)
+ SELECT 'Ram','Rai',1,34,23
+ UNION
+ SELECT 'Sita','Shrestha',2,24,89;
+
+
+SELECT * FROM Student;
+
+ALTER TABLE Student
+ADD COLUMN Dept_Name VARCHAR(20);
+
+UPDATE Student
+SET Dept_Name= 'HR';
+
+ALTER TABLE Student
+DROP COLUMN Dept_Name;
+
+
+ALTER TABLE Student
+ADD COLUMN Salary INT;
+
+UPDATE Student
+SET Salary=28000
+WHERE stu_id <>1;
+
+SELECT salary
+FROM Student
+WHERE stu_id=1;
+
+SELECT COALESCE(Salary,NULL,40000) AS salary
+FROM Student
+WHERE stu_id=1;
+
+UPDATE Student
+SET salary=COALESCE(Salary,40000);
+
+INSERT  INTO Student(firstname,lastname,stu_id,age,marks,Salary)
+SELECT 'Adi','Tamang',4,25,78,60000
+UNION
+SELECT 'Lisa','Singh',8,23,98,65000;
+
+
+ INSERT INTO Student(firstname,lastname,stu_id,age,marks)
+ SELECT 'Gita','Rai',3,34,95
+ UNION
+ SELECT 'abhi','Karki',7,24,80;
+
+
+
+
+SELECT INSTR('Hello World','World') AS Position;
+
+WITH employee_cte AS(
+  SELECT firstname,lastname
+  FROM Student
+  WHERE stu_id=1)
+  SELECT * FROM employee_cte;
+  
+  
+ 
+WITH employee_cte AS(
+  SELECT firstname,lastname,MAX(marks) As maximum_salary
+  FROM Student
+  GROUP By stu_id
+  HAVING marks>=80),
+  dept_cte AS(
+    SELECT firstname,lastname,insuranceclaims
+    FROM Employee_detail
+    WHERE insuranceclaims>300000
+    )
+    SELECT * FROM dept_cte;
+    
+    
+    SELECT * FROM Student;
+    
+    
+    
+    SELECT  firstname,lastname,
+    AVG(marks) OVER(PARTITION BY age ORDER BY marks desc) AS avg_marks
+    FROM Student;
+    
+    CREATE TABLE Employee(
+    EmployeeID INT PRIMARY KEY,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Address VARCHAR(100),
+    Department VARCHAR(50),
+    Salary DECIMAL(10, 2),
+    DOB DATE,
+    DeptID INT,
+    FOREIGN KEY (DeptID) REFERENCES Department (DeptID)
+);
+
+
+INSERT INTO Employee( EmployeeID,FirstName, LastName, Address, Department, Salary, DOB,DeptID)
+VALUES
+(1,'Anil', 'Shrestha', 'Putalisadak, Kathmandu', 'Finance', 55000.00, '1995-03-22',101),
+(2,'Garima', 'Thapa', 'Baneshwor, Kathmandu', 'IT', 60000.00, '1992-12-05',102),
+(3,'Rupesh', 'Karki', 'Lalitpur', 'Human Resources', 50000.00, '1996-07-30',103),
+(4,'Prateek', 'Lama', 'Thamel, Kathmandu', 'Marketing', 48000.00, '1993-11-11',104),
+(5,'Aavika', 'Sharma', 'Bhaktapur, Nepal', 'IT', 45000.00, '1998-04-12',102),
+(6,'Shristi', 'Joshi', 'Pokhara, Nepal', 'Marketing', 48000.00, '1997-09-25',104);
+
+
+SELECT * FROM Employee4;
+
+CREATE TABLE Department (
+    DeptID INT PRIMARY KEY ,
+    DeptName VARCHAR(50),
+    DeptHead VARCHAR(100)
+);
+INSERT INTO Department (DeptID, DeptName, DeptHead)
+VALUES
+(101, 'Finance', 'Ramesh Karki'),
+(102, 'IT', 'Sunil Lama'),
+(103, 'Human Resources', 'Meena Shrestha'),
+(104, 'Marketing', 'Dipesh Khadka');
+
+SELECT * FROM Department;
+SELECT * FROM Employee;
+
+
+
+/*Create CTE using joins. (among table)
+Create CTE using multiple CTE's
+Window function (Rank,row_number(),dense_rank() make sure table has ties values)
+Lead lag query*/
+-- 1. Create CTE using joins. (among table)
+
+WITH Employee_CTE AS(
+  SELECT e.Firstname,e.Lastname,d.DeptName,d.DeptID
+  FROM Employee e
+  LEFT JOIN Department d
+  ON e.DeptID=d.DeptID)
+  SELECT * FROM Employee_CTE;
+  
+  
+WITH Employee1 AS(
+  SELECT EmployeeID,DeptID,Firstname,Lastname,Salary
+  FROM Employee
+  WHERE Salary<=50000
+  ),
+  Dept AS(
+    SELECT DEptID,DeptName,depthead
+    FROM Department
+    WHERE DeptName='Marketing'
+    )
+    SELECT e1.Firstname,e1.Lastname,e1.Salary,d1.DeptName
+    FROM Employee1 e1
+    INNER JOIN Dept d1
+    ON e1.DeptID=d1.DeptID;
+    
+    
+    WITH Employee1 AS(
+  SELECT EmployeeID,DeptID,Department,Firstname,Lastname,Salary
+  FROM Employee
+  WHERE Salary<=50000
+  ),
+  Dept AS(
+    SELECT DeptID,DeptName,depthead
+    FROM Department
+    WHERE DeptName='Marketing'
+    )
+    SELECT * FROM Employee1,Dept;
+    
+    
+    SELECT Firstname,Lastname,Department,Salary,
+    RANK() OVER(  ORDER BY Salary DESC) AS salary
+    FROM Employee;
+    
+    
+    SELECT firstname,lastname,Salary,
+    LEAD(Salary,2,0) OVER (ORDER BY EmployeeID),
+    LAG(Salary,2,0) OVER (ORDER BY EmployeeID)
+    FROM Employee;
+    
+    
+    SELECT EmployeeID, Firstname,Lastname,
+    CASE
+    	WHEN Salary <50000 THEN 'Low Salary'
+        WHEN Salary =50000 THEN 'Average Salary'
+        ELSE 'High Salary.'
+        END AS Salary_des
+        FROM Employee;
+        
+   SELECT * FROM Employee;
+   
+   
+   
+   CREATE PROCEDURE GetEmployeeSummary AS
+   BEGIN
+   SELECT 
+   	COUNT(*) TotalEmployee,
+    AVG(Salary) AvgSalary
+    FROm Employee
+    WHERE Department='IT'
+ END
+    
+EXEC GetEmployeeSumary
+    
+    
+    
+    ALTER PROCEDURE GETEmployeeSummary @Department NVARCHAR(50)
+    AS  
+    BEGIN
+    SELECT 
+    COUNT(*) TotalEmployee,
+    AVG(Salary) AvgSalary
+    FROm Employee
+    WHERE Department=@Department
+    END;
+    
+    EXEC GETEmployeeSummary @Department='Finance';
+    
+    
+
+   
+   
+   
+    
+
+
+
+   
+    
