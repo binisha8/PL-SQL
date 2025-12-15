@@ -65,3 +65,530 @@ END
 EXEC DEL_EMPLOYEE;
 
 SELECT * FROM Employee;
+
+
+
+
+SELECT MAX(SALARY),MIN(SALARY)
+FROM HR.EMPLOYEES;
+
+SELECT SALARY,
+CASE 
+    WHEN SALARY =(SELECT MAX(SALARY)FROM HR.EMPLOYEES) 
+    THEN 'HIGH SALARY'
+    WHEN SALARY =(SELECT MIN(SALARY) FROM HR.EMPLOYEES) 
+    THEN 'LOW SALARY'
+ELSE 
+    'NORMAL'
+
+END AS SALARY_RANK
+FROM HR.EMPLOYEES;
+
+CREATE OR REPLACE PROCEDURE ADD_NUM(
+    NUM1 IN INT,
+    NUM2 IN INT
+)IS 
+SUM_RESULT INT;
+BEGIN
+    SUM_RESULT:= NUM1 + NUM2;
+    DBMS_OUTPUT.PUT_LINE('SUM IS: '|| SUM_RESULT);
+END ADD_NUM;
+
+
+BEGIN
+    ADD_NUM(50, 20);
+END;
+/
+
+
+CREATE TABLE eMP1(
+    emp_id NUMBER PRIMARY KEY,
+    name VARCHAR2(50),
+    salary NUMBER,
+    status VARCHAR2(10)
+);
+ 
+CREATE TABLE stg_employeess(
+    emp_id NUMBER PRIMARY KEY,
+    name VARCHAR2(50),
+    salary NUMBER,
+    status VARCHAR2(10)
+);
+ 
+INSERT INTO EMP1
+SELECT employee_id AS emp_id, concat(FIRST_NAME,last_name) AS name, salary AS salary,
+CASE
+    WHEN salary > 10000 THEN 'High'
+    ELSE 'Low'
+END AS status
+from hr.EMPLOYEES;
+ 
+select * from EMP1;
+ 
+UPDATE EMP1
+set salary = 10000,
+status = 'High'
+where status = 'Low';
+
+
+
+*/
+ /*Create a PL/SQL procedure named update_bonus that updates employee bonus information
+based on the hr.employees table
+ Use a MERGE statement to:
+ Update emp_bonus_log if the employee already exists.
+ Insert a new record if not.
+display meaningful messages using DBMS_OUTPUT*/
+
+ 
+CREATE TABLE emp_bonus_log (
+    emp_id NUMBER PRIMARY KEY,
+    emp_name VARCHAR2(50),
+    salary NUMBER,
+    bonus NUMBER,
+    date_updated DATE
+);
+
+CREATE TABLE EMPLOYEEBONUS(
+    emp_id INT,
+    FIRST_NAME VARCHAR(20),
+    SALARY NUMBER
+);
+
+INSERT INTO EMPLOYEEBONUS VALUES(100,'Anjan',30000);
+INSERT INTO EMPLOYEEBONUS VALUES(101,'Ambika',50000);
+INSERT INTO EMPLOYEEBONUS VALUES(102,'Sarala',70000);
+
+SELECT * FROM EMPLOYEEBONUS;
+  
+
+CREATE OR REPLACE PROCEDURE update_bonus (
+pemp_id IN EMPLOYEEBONUS.emp_id%TYPE,
+pbonus_percent IN NUMBER
+)
+IS
+vname  EMPLOYEEBONUS.FIRST_NAME%TYPE;
+vsalary EMPLOYEEBONUS.SALARY%TYPE;
+vbonus NUMBER;
+
+BEGIN
+
+SELECT FIRST_NAME, SALARY
+INTO vname, vsalary
+FROM EMPLOYEEBONUS
+WHERE emp_id= pemp_id;
+
+vbonus := vsalary * (pbonus_percent / 100);
+
+MERGE INTO emp_bonus_log t
+USING (SELECT pemp_id AS emp_id FROM DUAL) s
+ON (t.emp_id = s.emp_id)
+WHEN MATCHED THEN
+UPDATE SET t.salary = vsalary,
+    t.bonus = vbonus,
+    t.date_updated = SYSDATE
+ WHEN NOT MATCHED THEN
+    INSERT (emp_id, emp_name, salary, bonus, date_updated)
+    VALUES (pemp_id, vname, vsalary, vbonus, SYSDATE);
+    DBMS_OUTPUT.PUT_LINE('Bonus updated for Employee ID: ' || pemp_id);
+    DBMS_OUTPUT.PUT_LINE('Name: ' || vname || ', Salary: ' || vsalary || ', Bonus: ' || vbonus);
+
+END update_bonus;
+/
+
+
+BEGIN
+    update_bonus(101, 10);
+    
+END;
+/
+
+SELECT * FROM emp_bonus_log ;
+
+
+
+
+CREATE OR REPLACE PROCEDURE POWER_NUM(
+    NUM1 IN NUMBER,
+    NUM2 IN NUMBER
+)IS 
+POWER_RESULT NUMBER;
+BEGIN
+    POWER_RESULT:= POWER(NUM1,NUM2);
+    DBMS_OUTPUT.PUT_LINE('POWER OF NUMBER IS: ' || POWER_RESULT);
+
+END POWER_NUM;
+
+
+BEGIN
+    POWER_NUM(10,2);
+END;
+/
+SELECT * FROM EMPLOYEES;
+
+
+CREATE OR REPLACE PROCEDURE TOTAL(
+   NUM1 IN NUMBER,
+   NUM2 IN NUMBER,
+   NUM_RESULT OUT NUMBER
+) IS
+BEGIN
+  NUM_RESULT := POWER(NUM1, NUM2);
+  DBMS_OUTPUT.PUT_LINE('POWER IS: ' || NUM_RESULT);
+END;
+/
+
+DECLARE
+   NUM_RESULT NUMBER;
+BEGIN
+    TOTAL(10, 2, NUM_RESULT);
+    DBMS_OUTPUT.PUT_LINE('Result from OUT parameter: ' || NUM_RESULT);
+END;
+/
+
+
+CREATE TABLE ALPHABETS(
+    DETAILS VARCHAR(4),
+    NAME_A VARCHAR(20)
+);
+INSERT INTO ALPHABETS  VALUES('A','AMAN');
+INSERT INTO ALPHABETS  VALUES('B','SARA');
+INSERT INTO ALPHABETS VALUES('C','LISA');
+
+SELECT * FROM ALPHABETS;
+
+SELECT DETAILS,NAME_A
+FROM ALPHABETS
+ORDER BY
+CASE 
+    WHEN DETAILS='B' THEN 1
+    WHEN DETAILS='C' THEN 2
+    ELSE 3
+      END;
+
+
+
+--Merge inside procedure for updateing student marks
+
+
+CREATE TABLE STUDENT_MARKS(
+    STUDENT_ID NUMBER PRIMARY KEY,
+    STUDENT_MARKS NUMBER,
+    UPDATED_DATE DATE
+);
+CREATE OR REPLACE PROCEDURE update_marks(
+    p_id    IN NUMBER,
+    p_marks IN NUMBER
+)
+IS
+BEGIN
+    MERGE INTO student_marks t
+    USING (SELECT p_id AS id, p_marks AS student_marks FROM dual) s
+    ON (t.student_id = s.id)
+    WHEN MATCHED THEN
+        UPDATE SET
+            t.student_marks = s.student_marks,
+            t.updated_date  = SYSDATE
+    WHEN NOT MATCHED THEN
+        INSERT (student_id, student_marks, updated_date)
+        VALUES (p_id, p_marks, SYSDATE);
+
+    DBMS_OUTPUT.PUT_LINE('Marks updated or inserted for student ' || p_id);
+END update_marks;
+/
+
+BEGIN
+    UPDATE_MARKS(1,90);
+END;
+/
+
+SELECT * FROM STUDENT_MARKS;
+
+
+--MERGE USING FULL ROW SOURCE INSIDE PROCEDURE
+
+CREATE TABLE DEPT_SUMMARY(
+    DEPT_ID NUMBER PRIMARY KEY,
+    TOTAL_SALARY NUMBER,
+    LAST_UPDATED DATE
+);
+
+CREATE OR REPLACE PROCEDURE UPDATE_DEPARTMENT_SALARY
+as
+BEGIN
+    MERGE INTO DEPT_SUMMARY t
+    USING(
+        SELECT DEPTID AS DEPT_ID,SUM(SALARY) AS TOTAL_SALARY
+        FROM Employee12
+        GROUP BY DEPARTMENT_ID
+    )S
+    ON(T.DEPT_ID=S.DEPTID)
+    WHEN MATCHED THEN 
+    UPDATE set 
+        T.TOTAL_SALARY=S.TOTAL_SALARY
+        T.LAST_UPDATED=SYSDATE
+    WHEN NOT MATCHED THEN
+    INSERT (DEPT_ID,TOTAL_SALARY,LAST_UPDATED)
+    VALUES(S.DEPT_ID,S.TOTAL_SALARY,SYSDATE);
+    DBMS_OUTPUT.PUT_LINE('DEPARTMENT SALARY SUMMARY UPDATES: ');
+    END;
+/
+BEGIN
+    UPDATE_DEPARTMENT_SALARY;
+END;
+/
+
+
+--Merge inside procedure for updateing student marks
+
+
+CREATE TABLE STUDENT_MARKS(
+    STUDENT_ID NUMBER PRIMARY KEY,
+    STUDENT_MARKS NUMBER,
+    UPDATED_DATE DATE
+);
+CREATE OR REPLACE PROCEDURE update_marks(
+    p_id    IN NUMBER,
+    p_marks IN NUMBER
+)
+IS
+BEGIN
+    MERGE INTO student_marks t
+    USING (SELECT p_id AS id, p_marks AS student_marks FROM dual) s
+    ON (t.student_id = s.id)
+    WHEN MATCHED THEN
+        UPDATE SET
+            t.student_marks = s.student_marks,
+            t.updated_date  = SYSDATE
+    WHEN NOT MATCHED THEN
+        INSERT (student_id, student_marks, updated_date)
+        VALUES (p_id, p_marks, SYSDATE);
+
+    DBMS_OUTPUT.PUT_LINE('Marks updated or inserted for student ' || p_id);
+END update_marks;
+/
+
+BEGIN
+    UPDATE_MARKS(1,90);
+END;
+/
+
+SELECT * FROM STUDENT_MARKS;
+
+
+--MERGE USING FULL ROW SOURCE INSIDE PROCEDURE
+
+CREATE TABLE DEPT_SUMMARY(
+    DEPT_ID NUMBER PRIMARY KEY,
+    TOTAL_SALARY NUMBER,
+    LAST_UPDATED DATE
+);
+
+CREATE OR REPLACE PROCEDURE UPDATE_DEPARTMENT_SALARY
+as
+BEGIN
+    MERGE INTO DEPT_SUMMARY t
+    USING(
+        SELECT DEPTID AS DEPT_ID,SUM(SALARY) AS TOTAL_SALARY
+        FROM Employee12
+        GROUP BY DEPARTMENT_ID
+    )S
+    ON(T.DEPT_ID=S.DEPTID)
+    WHEN MATCHED THEN 
+    UPDATE set 
+        T.TOTAL_SALARY=S.TOTAL_SALARY
+        T.LAST_UPDATED=SYSDATE
+    WHEN NOT MATCHED THEN
+    INSERT (DEPT_ID,TOTAL_SALARY,LAST_UPDATED)
+    VALUES(S.DEPT_ID,S.TOTAL_SALARY,SYSDATE);
+    DBMS_OUTPUT.PUT_LINE('DEPARTMENT SALARY SUMMARY UPDATES: ');
+    END;
+/
+BEGIN
+    UPDATE_DEPARTMENT_SALARY;
+END;
+/
+
+
+
+CREATE TABLE employee12(
+    deptid INT,
+    empid INT PRIMARY KEY,
+    salary NUMBER
+);
+INSERT INTO employee12 VALUES(1,23,29000);
+INSERT INTO employee12 VALUES(2,21,50000);
+INSERT INTO employee12 VALUES(1,34,70000);
+
+
+CREATE TABLE department_salary_stats (
+    deptid INT,
+    total_salary NUMBER,
+    average_salary NUMBER,
+    calculation_date DATE
+);
+
+
+CREATE OR REPLACE PROCEDURE dept_salary_stats_procedure (
+    p_deptid IN employee12.deptid%TYPE
+)
+IS
+    vtotal_salary NUMBER;
+    vaverage_salary NUMBER;
+    vnumber_of
+    
+    _employees NUMBER;
+    v_dept_exists NUMBER;
+
+    invalid_department EXCEPTION;
+    no_employees_found EXCEPTION;
+    
+BEGIN
+    SELECT COUNT(*)
+    INTO V_DEPT_EXISTS
+    FROM Employee12
+    WHERE DEPTID=p_deptid;
+
+    IF V_DEPT_EXISTS=0 THEN
+    RAISE invalid_department;
+    END IF;
+    
+    SELECT COUNT(*)
+    INTO vnumber_of_employees
+    FROM employee12
+    WHERE deptid = p_deptid;
+
+    IF vnumber_of_employees = 0 THEN
+    RAISE no_employees_found;
+    END IF;
+
+    SELECT AVG(salary), SUM(salary)
+    INTO vaverage_salary, vtotal_salary
+    FROM employee12
+    WHERE deptid = p_deptid;
+
+    MERGE INTO department_salary_stats t
+    USING (SELECT p_deptid AS deptid FROM dual) s
+    ON (t.deptid = s.deptid)
+    WHEN MATCHED THEN
+    UPDATE SET
+            t.total_salary  = vtotal_salary,
+            t.average_salary = vaverage_salary,
+            t.calculation_date = SYSDATE
+    WHEN NOT MATCHED THEN
+    INSERT (deptid, total_salary, average_salary, calculation_date)
+        VALUES (p_deptid, vtotal_salary, vaverage_salary, SYSDATE);
+
+    DBMS_OUTPUT.PUT_LINE('TOTAL SALARY IS : ' || vtotal_salary);
+    DBMS_OUTPUT.PUT_LINE('AVERAGE SALARY IS: '|| vaverage_salary);
+
+EXCEPTION
+        WHEN invalid_department THEN 
+        DBMS_OUTPUT.put_line('invalid department id:'|| p_deptid);
+
+        WHEN no_employees_found  THEN
+        DBMS_OUTPUT.PUT_LINE('NO EMPLOYEES FOUND IN DEPARTMENT: '|| p_deptid);
+
+END dept_salary_stats_procedure;
+/
+
+
+BEGIN
+    dept_salary_stats_procedure(2);
+END;
+
+/
+
+
+SELECT * FROM department_salary_stats;
+
+
+SELECT * FROM HR.employees
+WHERE FIRST_NAME LIKE 'A%';
+
+
+SELECT * FROM HR.EMPLOYEES
+WHERE FIRST_NAME LIKE '_%A';
+
+CREATE OR REPLACE PROCEDURE math_demo(
+    p_input IN NUMBER,
+    p_square OUT NUMBER,
+    p_num IN OUT NUMBER
+)
+IS
+BEGIN
+    p_square := p_input * p_input;  -- OUT param
+    p_num := p_num + 10;            -- IN OUT param
+END;
+/
+
+DECLARE
+    x NUMBER := 9;
+    y NUMBER;
+    z NUMBER := 1;
+BEGIN
+    math_demo(x, y, z);
+    DBMS_OUTPUT.PUT_LINE('Square = ' || y);
+    DBMS_OUTPUT.PUT_LINE('Updated z = ' || z);
+END;
+/
+
+DECLARE
+V_EMP_NAME EMPLOYEES.emp_name%type;
+V_SALARY EMPLOYEES.sALARY%TYPE;
+BEGIN
+    SELECT EMP_NAME,SALARY INTO V_EMP_NAME,V_SALARY
+    FROM EMPLOYEES
+   -- WHERE EMPLOYEE_ID=10
+DBMS_OUTPUT.pUT_LINE('EMPLOYEE: ' || V_EMP_NAME||'HAS SALARY OF '|| V_SALARY);
+DBMS_OUTPUT.PUT_LINE('A: ' ||SQL%ROWCOUNT);
+
+END;
+/
+
+
+
+CREATE TABLE STUDENTS(
+    STUDENT_ID INT,
+    STUDENT_NAME VARCHAR2(50),
+    AGE NUMBER,
+    SCORE NUMBER,
+    CLASS_NUMBER NUMBER
+);
+
+INSERT INTO STUDENTS VALUES(1,'RAM',13,90,6);
+INSERT INTO STUDENTS VALUES(2,'GINA',16,58,9);
+INSERT INTO STUDENTS VALUES(2,'ASHMA',18,77,9);
+INSERT INTO STUDENTS VALUES(2,'ASHMA',18,77,9);
+INSERT INTO STUDENTS VALUES(3,'ASHMA',10,80,7);
+INSERT INTO STUDENTS VALUES(4,'ISHAN',19,99,7);
+
+
+SELECT * FROM(
+SELECT STUDENT_NAME,SCORE ,
+DENSE_RANK() OVER(PARTITION BY STUDENT_NAME ORDER BY  STUDENT_ID DESC) R
+FROM STUDENTS) t
+WHERE T.R>1;
+
+DELETE FROM STUDENTS
+WHERE ROWID IN (
+    SELECT rid FROM (
+        SELECT ROWID AS rid,
+               DENSE_RANK() OVER(PARTITION BY STUDENT_NAME ORDER BY STUDENT_ID DESC) AS r
+        FROM STUDENTS
+    ) WHERE r > 1
+);
+
+SELECT * FROM STUDENTS;
+
+
+
+
+
+
+
+
+
+
+
+
