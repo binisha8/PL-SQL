@@ -1,0 +1,163 @@
+CREATE TABLE Eligibility
+(
+    First_name VARCHAR(20),
+    Last_name VARCHAR(20),
+    DOB DATE,
+    Gender VARCHAR(2),
+    Mem_id INT PRIMARY KEY
+    );
+
+CREATE TABLE Claim
+(
+    First_name VARCHAR(20),
+    Last_name VARCHAR(20),
+    DOB DATE,
+    Gender VARCHAR(2),
+    Mem_id INT
+    );
+
+INSERT INTO Eligibility VALUES('Anna', 'Lama',TO_DATE('25-JAN-1995','DD-MON-YYYY'), 'F', 101);
+INSERT INTO Eligibility VALUES('Rabin', 'Shrestha',TO_DATE('28-FEB-2002','DD-MON-YYYY'), 'M', 102);
+INSERT INTO Eligibility VALUES('Ubin', 'Raut', TO_DATE('04-APR-2001','DD-MON-YYYY'), 'M', 103);
+INSERT INTO Eligibility VALUES('Seema', 'Maharjan',TO_DATE('01-MAY-2001','DD-MON-YYYY'), 'F', 104);
+SELECT * FROM ELIGIBILITY;
+
+INSERT INTO CLAIM VALUES('Anna', 'Lama',TO_DATE('25-JAN-1995','DD-MON-YYYY'), 'F',NULL);
+INSERT INTO CLAIM VALUES('Rabin', 'Shrestha',TO_DATE('28-FEB-2002','DD-MON-YYYY'), 'M', NULL);
+INSERT INTO CLAIM VALUES('Ubin', NULL, TO_DATE('04-APR-2001','DD-MON-YYYY'), 'M', NULL);
+INSERT INTO CLAIM VALUES('Seema', 'Maharjan',TO_DATE('01-MAY-2001','DD-MON-YYYY'), 'F', NULL);
+INSERT INTO CLAIM VALUES('kritika','KC',TO_DATE('09-JUN-2000','DD-MON-YYYY'),'F',NULL);
+SELECT * FROM CLAIM;
+
+
+MERGE INTO Claim c USING Eligibility e
+ON(
+    c.First_name=e.First_name
+ AND
+    c.Last_name=e.Last_name
+ AND
+    c.DOB=e.DOB 
+ )
+WHEN MATCHED  THEN
+   UPDATE set c.Mem_id=e.Mem_id
+   WHERE c.Mem_id IS NULL;
+Select * from CLAIM;
+
+--CREATING GLOBAL TEMPORARY TABLE(GTT)
+CREATE GLOBAL TEMPORARY TABLE TEMP_EMPLOYEES(
+    EMP_ID NUMBER,
+    EMP_NAME VARCHAR(50),
+    salary NUMBER
+)ON COMMIT DELETE ROWS;
+
+INSERT INTO TEMP_EMPLOYEES VALUES(1, 'Ram',6000);
+
+select * from TEMP_EMPLOYEES;
+
+
+--TABLE EXISTS PERMANENTLY BUT ITS DATA IS TEMPORARY USING ON COMMIT PRESERVE ROWS
+CREATE GLOBAL TEMPORARY TABLE TEMP(
+    EMP_ID NUMBER,
+    EMP_NAME VARCHAR(50),
+    salasry NUMBER
+)ON COMMIT PRESERVE ROWS;
+
+
+INSERT INTO TEMP VALUES(1, 'Ram',6000);
+select * from TEMP;
+
+
+WITH DEPT_AVG AS(
+    SELECT DEPARTMENT_ID,AVG(SALARY) AS avg_sal
+    FROM HR.EMPLOYEES
+    GROUP By Department_ID
+)
+SELECT e.First_name,e.Last_name,d.avg_sal,e.Department_ID
+FROM HR.EMPLOYEES e
+LEFT JOIN DEPT_AVG d
+ON e.Department_ID=d.Department_ID;
+
+SELECT FIRST_NAME,SALARY 
+FROM HR.EMPLOYEES
+WHERE SALARY=(SELECT MAX(SALARY) FROM HR.EMPLOYEES);
+
+SELECT dept, avg_salary
+FROM (
+    SELECT department_id as dept, AVG(salary) AS avg_salary
+    FROM HR.employees
+    GROUP BY department_id
+) dept_avg;
+
+
+--materialize view: stores data 
+
+
+WITH DEPT_AVG AS(
+    SELECT DEPARTMENT_ID,AVG(SALARY) AS avg_sal
+    FROM HR.EMPLOYEES
+    GROUP By Department_ID
+)
+SELECT E.First_name,E.Last_name,D.avg_sal,E.Department_ID,F.DEPARTMENT_NAME
+FROM HR.EMPLOYEES E
+LEFT JOIN DEPT_AVG D
+ON E.Department_ID=D.Department_ID
+LEFT JOIN HR.DEPARTMENTS F
+ON E.DEPARTMENT_ID=F.DEPARTMENT_ID;
+
+
+SELECT e.FIRST_NAME,e.Last_name,e.SALARY
+FROM HR.EMPLOYEES e
+WHERE e.SALARY >(SELECT AVG(SALARY) FROM HR.EMPLOYEES);
+
+
+SELECT dept, avg_salary
+FROM (
+    SELECT department_id as dept, AVG(salary) AS avg_salary
+    FROM HR.employees
+    GROUP BY department_id
+) dept_avg;
+
+
+SELECT dept, avg_salary,D_NAME
+FROM (
+    SELECT E.department_id as dept, E.AVG(salary) AS avg_salary,D.DEPARTMENT_NAME AS D_NAME
+    FROM HR.EMPLOYEES E 
+    JOIN HR.DEPARTMENTS D
+    ON E.department_id = D.department_id
+    GROUP BY E.department_id
+) dept_avg ;
+
+
+
+
+SELECT e.dept_id,e.avg_salary,d.Department_ID
+FROM(
+    SELECT Department_ID as dept_id,AVG(SALARY) AS avg_salary
+    from hr.employees 
+    group by DEPARTMENT_ID
+) e
+join hr.DEPARTMENTS d
+on e.dept_id=d.Department_ID;
+
+
+--LISTAGG:AGGREGATING STRING VALUES
+/*ISTAGG(
+    [DISTINCT MEASURE_EXPRESSION]
+    [,'DELIMITER']
+)
+WITHIN GROUP (ORDER BY )*/
+
+
+
+--List of employees in each deartme
+SELECT
+    D.DEPARTMENT_NAME,
+   LISTAGG(E.FIRST_NAME || ' ' || E.LAST_NAME, ',') 
+        WITHIN GROUP (ORDER BY E.FIRST_NAME ASC) AS DEPT
+FROM HR.EMPLOYEES E
+JOIN HR.DEPARTMENTS D
+    ON E.DEPARTMENT_ID = D.DEPARTMENT_ID
+    GROUP BY D.DEPARTMENT_NAME;
+
+
+    
