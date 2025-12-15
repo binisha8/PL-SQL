@@ -1,0 +1,67 @@
+create table Employee (
+    empID int primary key,
+    empName varchar(50),
+    e_position varchar(50),
+    salary int,
+    deptID int
+    );
+ 
+CREATE OR REPLACE PROCEDURE add_employee(
+    p_id IN NUMBER,
+    p_firstname IN VARCHAR2,
+    p_lastname IN VARCHAR2,
+    p_salary IN NUMBER
+    )
+   
+IS
+BEGIN
+
+    INSERT INTO Employee(empID, empName, e_position, salary, deptID)
+    VALUES(p_id,p_firstname,p_lastname,p_salary);
+ 
+    DBMS_OUTPUT.PUT_LINE('Employee added successfully!');
+
+EXCEPTION
+    WHEN DUP_VAL_ON_INDEX THEN
+     DBMS_OUTPUT.PUT_LINE('Error:EmployeeId already exists');
+    WHEN OTHERS THEN
+     DBMS_OUTPUT.PUT_LINE('An unexpected error occured' || SQLERRM);
+
+END
+ add_employee;
+ 
+ 
+EXEC add_employee(1,'Ram','Kc',65000);
+EXEC add_employee(6,'Shreya', 'Dhakal',80000);
+EXEC add_employee(7,'Suman', 'Pradhan',55000);
+ 
+SELECT * FROM EMPLOYEE;
+
+CREATE OR REPLACE PROCEDURE add_people
+IS 
+v_count VARCHAR(255):='2';
+BEGIN
+DBMS_OUTPUT.PUT_LINE('count:'||v_count);
+END add_people;
+
+EXEC add_people;
+
+DROP PROCEDURE SayHello;
+
+
+CREATE OR REPLACE PROCEDURE del_employee
+   IS
+BEGIN
+
+    DELETE FROM Employee
+    WHERE emp_id=1;
+ 
+    DBMS_OUTPUT.PUT_LINE('Employee deleted successfully!');
+END
+    del_employee;
+
+
+
+EXEC DEL_EMPLOYEE;
+
+SELECT * FROM Employee;
