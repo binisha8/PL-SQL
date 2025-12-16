@@ -582,6 +582,161 @@ WHERE ROWID IN (
 SELECT * FROM STUDENTS;
 
 
+--Basic Procedure
+CREATE OR REPLACE PROCEDURE greet_hello IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('Hello World');
+END;
+/
+
+
+BEGIN
+    GREET_HELLO;
+END;
+/
+
+
+--PROCEDURE WITH INPUT PARAMETER
+CREATE OR REPLACE PROCEDURE print_square(p_num IN NUMBER ) IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('SQUARE = '||p_num*p_num);
+END;
+/
+
+BEGIN
+    print_square(5);
+END;
+/
+
+
+--Multiple parameters
+CREATE OR REPLACE PROCEDURE ADD_TWO_NUMBERS(P_NUM1 IN NUMBER,P_NUM2 IN NUMBER)
+IS
+BEGIN
+    DBMS_OUTPUT.PUT_LINE('SUM= '||(P_NUM1+P_NUM2));
+END;
+/
+
+BEGIN
+    ADD_TWO_NUMBERS(5,7);
+END;
+/
+
+
+--PROCEDURE WITH IN,OUT,IN OUT PARAMETERS
+CREATE OR REPLACE PROCEDURE double_number(p_input IN NUMBER,p_result OUT NUMBER)
+IS 
+BEGIN
+    p_result:=p_input*2;
+END;
+/
+
+DECLARE
+    v_result number;
+BEGIN
+    double_number(10,v_result);
+    DBMS_OUTPUT.PUT_LINE('Double = '|| v_result);
+END;
+/
+
+select * from employees;
+--Procedure to update table
+CREATE OR REPLACE PROCEDURE UPDATE_SALARY(P_EMP_ID IN NUMBER) IS 
+BEGIN
+    UPDATE employees
+    SET SALARY=SALARY*1.10
+    WHERE employee_id=P_EMP_ID;
+    DBMS_OUTPUT.pUT_LINE('salary update for employee id : '||P_EMP_ID);
+end;
+/
+
+begin
+    UPDATE_SALARY(101);
+END;
+/
+
+--pROCEDURE WITH LOOP
+CREATE OR REPLACE  PROCEDURE print_number(p_n IN number) 
+IS
+begin
+    FOR R IN 1..p_n LOOP
+        DBMS_OUTPUT.pUT_LINE(R);
+    END LOOP;
+END;
+/
+
+BEGIN 
+    print_number(5);
+END;
+/
+
+
+select * from employees;
+
+--PROCEDURE WITH CURSORS
+CREATE OR REPLACE PROCEDURE print_dept_employees(p_dept_id IN NUMBER)IS
+CURSOR emp_cur IS
+    SELECT first_name,last_name,Salary
+    FROM hr.employees
+    WHERE department_id = p_dept_id;
+v_emp emp_cur%ROWTYPE;
+begin
+OPEN emp_cur;
+   LOOP
+    FETCH emp_cur INTO v_emp;
+    EXIT WHEN emp_cur%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE(V_EMP.FIRST_NAME||' '||v_emp.last_name||'-'||V_EMP.SALARY);
+    END LOOP;
+    CLOSE emp_cur;
+END;
+/
+
+BEGIN
+    print_dept_employees(50);
+END;
+/
+
+--procedure with exceptio handling
+CREATE OR REPLACE PROCEDURE divide_numbers(
+    p_num1 IN NUMBER,
+    p_num2 IN NUMBER
+) IS 
+    V_result NUMBER;
+BEGIN
+    v_result:=p_num1/p_num2;
+    DBMS_OUTPUT.PUT_LINE('RESULT = '||v_result);
+EXCEPTION
+    WHEN ZERO_DIVIDE THEN
+    DBMS_OUTPUT.PUT_LINE('cannot divide by zero');
+end;
+/
+
+BEGIN 
+    divide_numbers(10,0);
+END;
+/
+
+CREATE OR REPLACE PROCEDURE update_salary_by_rating(
+    p_emp_id IN employees.employee_id%TYPE,
+    P_rating IN NUMBER
+)
+IS
+BEGIN
+    IF p_rating =5 THEN 
+        UPDATE employees SET salary=salary*1.20 WHERE employee_id =p_emp_id;
+    ELSIF P_rating=4 THEN
+        UPDATE employees SET salary=salary*1.10 WHERE employee_id=p_emp_id;
+    ELSE 
+        UPDATE employees SET salary=salary*1.05 WHERE employee_id=p_emp_id;
+    END IF;
+END;
+/
+SELECT * FROM EMPLOYEES;
+
+BEGIN
+    update_salary_by_rating(1,5);
+END;
+/
 
 
 
